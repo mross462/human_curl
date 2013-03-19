@@ -144,9 +144,10 @@ class AsyncClient(object):
         :param process_func: function to call in process
         """
 
-        if process_func and not isinstance(process_func, FunctionType):
+        if process_func: 
+            if not isinstance(process_func, FunctionType):
+                raise InterfaceError("process_func must be function")
             self._process_func = process_func
-            raise InterfaceError("process_func must be function")
 
         if not self._openers_pool:
             self._openers_pool = self.build_pool()
