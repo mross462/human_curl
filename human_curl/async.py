@@ -297,6 +297,7 @@ class AsyncClient(object):
             opener.close()
 
         self._openers_pool.close()
+        self._openers_pool = None
 
     def method(self, method, **kwargs):
         """Added request params to data_queue
