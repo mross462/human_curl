@@ -727,6 +727,12 @@ class Response(object):
         except ValueError:
             return None
 
+    def _clean_raw_headers(self, raw_headers):
+        ret = raw_headers.strip()
+        ret = ret.replace("\r\nHTTP", "\r\n\r\nHTTP")
+        ret = ret.replace("\r\n\r\n\r\n", "\r\n\r\n")
+        return ret
+
     def _parse_headers_raw(self):
         """Parse response headers and save as instance vars
         """
@@ -775,7 +781,7 @@ class Response(object):
 
         raw_headers = self._headers_output.getvalue()
 
-        headers_blocks = raw_headers.strip().split("\r\n\r\n")
+        headers_blocks = self._clean_raw_headers(raw_headers).split("\r\n\r\n")
         for raw_block in headers_blocks:
             block = parse_header_block(raw_block)
 
