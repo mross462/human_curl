@@ -763,7 +763,11 @@ class Response(object):
                         logger.warn(e)
                         continue
                     else:
-                        block_headers.append((version, code, message))
+                        if len(block_headers) > 0:
+                            logger.warn("Status HTTP header already exitst %s, but found one more %s for url %s" %
+                                (block_headers[0], (version, code, message), self.url))
+                        else:
+                            block_headers.append((version, code, message))
                 else:
                     # raise ValueError("Wrong header field")
                     pass
