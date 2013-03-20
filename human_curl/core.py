@@ -746,7 +746,11 @@ class Response(object):
                 if not header:
                     continue
                 elif not header.startswith("HTTP"):
-                    field, value = map(lambda u: u.strip(), header.split(":", 1))
+                    try:
+                       field, value = map(lambda u: u.strip(), header.split(":", 1))
+                   except Exception, e:
+                       logger.warn("Unable to parse header %s for url %s , %s", header, self.url, e)
+                       continue
                     if field.startswith("Location"):
                         # maybe not good
                         if not value.startswith("http"):
