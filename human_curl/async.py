@@ -199,14 +199,20 @@ class AsyncClient(object):
 
         :param opener: :class:`pycurl.Curl` object
         """
-        opener.success_callback = None
-        opener.fail_callback = None
-        opener.request = None
-
         if getattr(opener, "dirty", False) is True:
             # After appling this method curl raise error
             # Unable to fetch curl handle from curl object
-            opener.reset()
+            # This code is workaround case reset() method is not working
+            # So we create new instance of opener
+            self._openers_pool.handles.remove(opener)
+            del opener
+
+            opener  = self.get_opener()
+            self._openers_pool.handles.append(opener)
+
+        opener.success_callback = None
+        opener.fail_callback = None
+        opener.request = None
 
         # Maybe need delete cookies?
         return opener
@@ -229,7 +235,7 @@ class AsyncClient(object):
             opener = self._free_openers.pop()
 
             # Create request object
-            self.configure_opener(opener, request_data)
+            opener = self.configure_opener(opener, request_data)
 
             # Add configured opener to handles pool
             self._openers_pool.add_handle(opener)
@@ -253,8 +259,7 @@ class AsyncClient(object):
                 response = self.make_response(opener)
                 opener.success_callback(response=response,
                                         async_client=self, opener=opener)
-                ## FIXME: after pycurl.MultiCurl reset error
-                ## opener.dirty = True
+                opener.dirty = True
                 self._free_openers.append(opener)
 
             for opener, errno, errmsg in error_list:
@@ -264,8 +269,7 @@ class AsyncClient(object):
                 opener.fail_callback(errno=errno, errmsg=errmsg,
                                      async_client=self, opener=opener,
                                      request=opener.request)
-                ## FIXME: after pycurl.MultiCurl reset error
-                ## opener.dirty = True
+                opener.dirty = True
                 self._free_openers.append(opener)
 
 
